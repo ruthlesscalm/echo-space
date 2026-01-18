@@ -1,6 +1,7 @@
 {
-  "name": "echo-space",
+  "name": "echo-space-backend",
   "version": "1.0.0",
+  "private": true,
   "description": "This is a music player built with react and express",
   "keywords": [
     "Music"
