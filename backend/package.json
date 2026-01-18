@@ -1,0 +1,26 @@
+{
+  "name": "echo-space",
+  "version": "1.0.0",
+  "description": "This is a music player built with react and express",
+  "keywords": [
+    "Music"
+  ],
+  "homepage": "https://github.com/ruthlesscalm/echo-space#readme",
+  "bugs": {
+    "url": "https://github.com/ruthlesscalm/echo-space/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruthlesscalm/echo-space.git"
+  },
+  "license": "ISC",
+  "author": "Ruthless Calm",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
