@@ -1,16 +1,9 @@
 import express from "express";
+import { authRegister, authLogin } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
-router.post("/register", (req, res) => {
-  const { username, email, password } = req.body || {};
-
-  if (!username || !email || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "Usename, email or password cannot be empty",
-    });
-  }
-});
+router.post("/register", authRegister);
+router.post("/login", authLogin);
 
 export default router;
