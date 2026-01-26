@@ -64,8 +64,35 @@ async function authRegister(req, res) {
   }
 }
 async function authLogin(req, res) {
-  res.json({
+  const { email, password } = req.body || {};
+
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "email or password cannot be empty",
+    });
+  }
+
+  const user = await User.findOne({ email: email });
+
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      message: "You are not registered yet, please register first",
+    });
+  }
+
+  const isPassword = await bcrypt.compare(password, user.password);
+
+  if (!isPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid credentials, please try again",
+    });
+  }
+  res.status(200).json({
     success: true,
+    message: "User loginned successfully",
   });
 }
 
