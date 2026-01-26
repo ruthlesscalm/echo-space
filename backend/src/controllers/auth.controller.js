@@ -72,28 +72,34 @@ async function authLogin(req, res) {
       message: "email or password cannot be empty",
     });
   }
+  try {
+    const user = await User.findOne({ email: email });
 
-  const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "You are not registered yet, please register first",
+      });
+    }
 
-  if (!user) {
-    return res.status(400).json({
-      success: false,
-      message: "You are not registered yet, please register first",
+    const isPassword = await bcrypt.compare(password, user.password);
+
+    if (!isPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials, please try again",
+      });
+    }
+
+    const token = jwt.sign(password, process.env.JWT_SECRET_KEY, {
+      expiresIn: "15min",
     });
-  }
-
-  const isPassword = await bcrypt.compare(password, user.password);
-
-  if (!isPassword) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid credentials, please try again",
+    return res.status(200).json({
+      success: true,
+      message: "User loggined successfully",
+      token,
     });
-  }
-  res.status(200).json({
-    success: true,
-    message: "User loginned successfully",
-  });
+  } catch (err) {}
 }
 
 export { authRegister, authLogin };
