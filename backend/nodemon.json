@@ -1,0 +1,6 @@
+{
+  "include": ["./src/app.js", "./src/controllers/", "./src/routes/"],
+  "ext": "js",
+  "exclude": ["./node_modules/"],
+  "exec": "node ./src/app.js"
+}
