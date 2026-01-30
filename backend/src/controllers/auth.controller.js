@@ -99,7 +99,13 @@ async function authLogin(req, res) {
       message: "User loggined successfully",
       token,
     });
-  } catch (err) {}
+  } catch (err) {
+    console.log("Error while Authentication: ", err);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong, please try again later",
+    });
+  }
 }
 
 export { authRegister, authLogin };
