@@ -91,7 +91,7 @@ async function authLogin(req, res) {
       });
     }
 
-    const token = jwt.sign(password, process.env.JWT_SECRET_KEY, {
+    const token = jwt.sign({ password }, process.env.JWT_SECRET_KEY, {
       expiresIn: "15min",
     });
     return res.status(200).json({
