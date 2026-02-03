@@ -91,13 +91,24 @@ async function authLogin(req, res) {
       });
     }
 
-    const token = jwt.sign({ password }, process.env.JWT_SECRET_KEY, {
-      expiresIn: "15min",
-    });
+    const authToken = jwt.sign(
+      { UserID: user._id },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "15min",
+      },
+    );
+    const refreshToken = jwt.sign(
+      { UserID: user._id },
+      process.env.JWT_REFRESH_TOKEN,
+      {
+        expiresIn: "7d",
+      },
+    );
     return res.status(200).json({
       success: true,
       message: "User loggined successfully",
-      token,
+      authToken,
     });
   } catch (err) {
     console.log("Error while Authentication: ", err);
