@@ -19,7 +19,7 @@ const Header = () => {
   return (
     <header className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex justify-between px-5 py-3 items-center border-b border-slate-600">
       <div>
-        <LogoText />
+        <LogoText className="text-[clamp(18px,0.85vw+1rem,3.25rem)]" />
       </div>
       <SearchBar />
       <nav>
