@@ -1,5 +1,7 @@
+import LogoText from "../components/LogoText";
+
 const Login = () => {
-  return <div>Login Page</div>;
+  return <></>;
 };
 
 export default Login;

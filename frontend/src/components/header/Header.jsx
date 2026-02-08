@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import SearchBar from "../SearchBar";
+import LogoText from "../LogoText";
 
 const Header = () => {
   const links = [
@@ -16,11 +17,9 @@ const Header = () => {
   }
 
   return (
-    <header className="bg-slate-800 text-white flex justify-between px-5 py-3 items-center">
+    <header className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex justify-between px-5 py-3 items-center border-b border-slate-600">
       <div>
-        <h1 className="text-3xl tracking-wide text-blue-400 font-space-grotesk font-medium">
-          Echo Space
-        </h1>
+        <LogoText />
       </div>
       <SearchBar />
       <nav>
