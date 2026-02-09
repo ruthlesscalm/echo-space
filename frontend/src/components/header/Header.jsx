@@ -21,7 +21,7 @@ const Header = () => {
       <div>
         <LogoText className="text-[clamp(18px,0.8vw+1rem,3rem)]" />
       </div>
-      <SearchBar inputClassName="text-[clamp(14px,0.35vw+0.75rem,1.5px)]" />
+      <SearchBar inputClassName="text-[clamp(14px,0.4vw+0.75rem,1.5rem)]" />
       <nav>
         <ul className="flex gap-10 text-xl">
           {links.map(({ label, href, varient }) => {
