@@ -19,9 +19,9 @@ const Header = () => {
   return (
     <header className="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white flex justify-between px-5 py-3 items-center border-b border-slate-600">
       <div>
-        <LogoText className="text-[clamp(18px,0.85vw+1rem,3.25rem)]" />
+        <LogoText className="text-[clamp(18px,0.8vw+1rem,3rem)]" />
       </div>
-      <SearchBar />
+      <SearchBar inputClassName="text-[clamp(14px,0.35vw+0.75rem,1.5px)]" />
       <nav>
         <ul className="flex gap-10 text-xl">
           {links.map(({ label, href, varient }) => {
