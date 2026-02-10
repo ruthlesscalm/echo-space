@@ -10,9 +10,9 @@ const Header = () => {
   ];
   function setStyle(isActive, varient) {
     if (varient === "button") {
-      return `bg-blue-700 font-bold px-5 py-2 rounded-md hover:bg-blue-600 transition-colors`;
+      return `text-[clamp(14px,0.3125vw+0.75rem,1.5rem)] bg-blue-700 font-bold px-[1em] py-[0.5em] rounded-md hover:bg-blue-600 transition-colors`;
     } else {
-      return `relative ${isActive ? "text-blue-400 after:w-full" : "text-slate-300 hover:text-white hover:after:w-full"} transition-colors after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-blue-400 after:transition-all`;
+      return `relative text-[clamp(14px,0.3125vw+0.75rem,1.5rem)] ${isActive ? "text-blue-400 after:w-full" : "text-slate-300 hover:text-white hover:after:w-full"} transition-colors after:absolute after:left-0 after:-bottom-1 after:h-0.5 after:w-0 after:bg-blue-400 after:transition-all`;
     }
   }
 
@@ -21,7 +21,7 @@ const Header = () => {
       <div>
         <LogoText className="text-[clamp(18px,0.8vw+1rem,3rem)]" />
       </div>
-      <SearchBar inputClassName="text-[clamp(14px,0.4vw+0.75rem,1.5rem)]" />
+      <SearchBar inputClassName="text-[clamp(14px,0.4vw+0.75rem,1.5rem)] w-[clamp(230px,16vw,500px)] " />
       <nav>
         <ul className="flex gap-10 text-xl">
           {links.map(({ label, href, varient }) => {
