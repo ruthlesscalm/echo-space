@@ -8,7 +8,7 @@ const HamburgerMenu = ({ displaySidebar, setDisplaySidebar }) => {
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 10"
-        className="w-8 h-8"
+        className="w-auto h-6.25 aspect-3/2"
       >
         <line
           x1="0"
@@ -17,7 +17,7 @@ const HamburgerMenu = ({ displaySidebar, setDisplaySidebar }) => {
           y2="0"
           stroke="#38bdf8"
           strokeWidth="1"
-          className={`${displaySidebar ? "rotate-45 origin-center -translate-x-1/6 translate-y-1/3" : ""}`}
+          className={`transition-transform transform-view origin-center duration-300 ease-in ${displaySidebar ? "rotate-45 -translate-x-1/6 translate-y-1/3" : ""}`}
         />
         <line
           x1="0"
@@ -26,7 +26,7 @@ const HamburgerMenu = ({ displaySidebar, setDisplaySidebar }) => {
           y2="5"
           stroke="#ffffff"
           strokeWidth="1"
-          className={displaySidebar ? "opacity-0" : "opacity-100"}
+          className={`transition-opacity transform-view duration-200 ease-in ${displaySidebar ? "opacity-0" : "opacity-100"}`}
         />
         <line
           x1="0"
@@ -35,7 +35,7 @@ const HamburgerMenu = ({ displaySidebar, setDisplaySidebar }) => {
           y2="10"
           stroke="#38bdf8"
           strokeWidth="1"
-          className={`${displaySidebar ? "-rotate-45 origin-center -translate-x-1/6 -translate-y-1/3" : ""}`}
+          className={`transition-transform transform-view origin-center duration-300 ease-in ${displaySidebar ? "-rotate-45 -translate-x-1/6 -translate-y-1/3" : ""}`}
         />
       </svg>
     </button>
