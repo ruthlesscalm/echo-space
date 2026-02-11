@@ -1,8 +1,12 @@
 import { NavLink } from "react-router-dom";
 import SearchBar from "../SearchBar";
 import LogoText from "../LogoText";
+import { useState } from "react";
+import SideBar from "./SideBar";
+import HamburgerMenu from "./HamburgerMenu";
 
 const Header = () => {
+  const [displaySidebar, setDisplaySidebar] = useState(false);
   const links = [
     { label: "Home", href: "/", varient: "link" },
     { label: "About", href: "/about", varient: "link" },
@@ -22,7 +26,7 @@ const Header = () => {
         <LogoText className="text-[clamp(18px,0.8vw+1rem,3rem)]" />
       </div>
       <SearchBar inputClassName="text-[clamp(14px,0.4vw+0.75rem,1.5rem)] w-[clamp(230px,16vw,500px)] " />
-      <nav>
+      <nav className="max-[834px]:hidden">
         <ul className="flex gap-10 text-xl">
           {links.map(({ label, href, varient }) => {
             return (
@@ -38,6 +42,15 @@ const Header = () => {
           })}
         </ul>
       </nav>
+      <div className="min-[834px]:hidden">
+        <HamburgerMenu
+          displaySidebar={displaySidebar}
+          setDisplaySidebar={setDisplaySidebar}
+        />
+      </div>
+      <SideBar
+        className={`min-[834px]:hidden ${displaySidebar ? "block" : "hidden"}`}
+      />
     </header>
   );
 };
