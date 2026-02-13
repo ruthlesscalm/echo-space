@@ -1,4 +1,8 @@
-const HamburgerMenu = ({ displaySidebar, setDisplaySidebar }) => {
+import { useContext } from "react";
+import { GlobalContext } from "../../contexts/GlobalState";
+
+const HamburgerMenu = () => {
+  const { displaySidebar, setDisplaySidebar } = useContext(GlobalContext);
   return (
     <button
       type="button"
