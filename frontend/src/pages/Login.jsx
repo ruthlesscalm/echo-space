@@ -18,7 +18,6 @@ const Login = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const { email, password } = Object.fromEntries(formData);
-    console.log(email, password);
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: {

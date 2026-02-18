@@ -19,7 +19,9 @@ const Register = () => {
   async function handleFormSubmit(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const { username, email, password } = Object.entries(formData);
+    console.log(formData);
+    const { username, email, password } = Object.fromEntries(formData);
+    console.log(username, email, password);
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: {
@@ -128,7 +130,7 @@ const Register = () => {
           <p className="mt-10 text-center text-sm/6 text-gray-400">
             Already a member?
             <Link
-              to="/register"
+              to="/login"
               className="font-semibold text-indigo-400 hover:text-indigo-300"
             >
               Login{" "}
