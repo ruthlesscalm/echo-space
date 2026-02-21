@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import { GlobalContext } from "../contexts/GlobalState";
 
 const Login = () => {
+  const { isLoginned, setIsLoginned } = useContext(GlobalContext);
+  const { message, setMessage } = useContext(GlobalContext);
   const [loginForm, setLoginForm] = useState({
     email: "",
     password: "",
@@ -30,6 +33,14 @@ const Login = () => {
     });
     const resObj = await res.json();
     console.log(resObj);
+    if (resObj.success === true) {
+      setIsLoginned(true);
+      setMessage("");
+    } else {
+      setIsLoginned(false);
+      setMessage(resObj.message);
+    }
+    console.log(message);
   }
   return (
     <div className="mt-22">
