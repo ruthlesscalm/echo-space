@@ -133,4 +133,12 @@ async function authLogin(req, res) {
   }
 }
 
-export { authRegister, authLogin };
+async function accessTokenRefresh(req, res) {
+  console.log("Token Refresh");
+}
+
+async function logout(req, res) {
+  console.log("Logout function");
+}
+
+export { authRegister, authLogin, accessTokenRefresh, logout };
