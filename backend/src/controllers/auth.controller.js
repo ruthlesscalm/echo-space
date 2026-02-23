@@ -105,11 +105,25 @@ async function authLogin(req, res) {
         expiresIn: "7d",
       },
     );
-    return res.status(200).json({
-      success: true,
-      message: "User loggined successfully",
-      authToken,
-    });
+    const cookieOptions = {
+      httpOnly: true, //javascript cannot read cookies
+      secure: false, // temporary in development for http , true in production for https
+      sameSite: "lax",
+    };
+    return res
+      .cookie("authToken", authToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+      })
+      .cookie("refreshToken", refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .status(200)
+      .json({
+        success: true,
+        message: "User loggined successfully",
+      });
   } catch (err) {
     console.log("Error while Authentication: ", err);
     res.status(500).json({
