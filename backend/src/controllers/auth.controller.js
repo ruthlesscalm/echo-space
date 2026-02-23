@@ -93,7 +93,7 @@ async function authLogin(req, res) {
 
     const authToken = jwt.sign(
       { UserID: user._id },
-      process.env.JWT_SECRET_KEY,
+      process.env.JWT_ACCESS_TOKEN,
       {
         expiresIn: "15min",
       },
