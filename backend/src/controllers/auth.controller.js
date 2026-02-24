@@ -5,40 +5,44 @@ import jwt from "jsonwebtoken";
 
 const cookieOptions = {
   httpOnly: true, //javascript cannot read cookies
-  secure: false, // temporary in development for http , true in production for https
+  secure: process.env.NODE_ENV === "production",
   sameSite: "lax",
 };
 
+const normalize = (value) => value?.toLowerCase().trim();
+
 async function authRegister(req, res) {
-  const { username, email, password } = req.body || {};
+  const username = normalize(req.body?.username);
+  const email = normalize(req.body?.email);
+  const password = req.body?.password;
+
   if (!username || !email || !password) {
     return res.status(400).json({
       success: false,
+      code: "MISSING_FIELDS",
       message: "username/email/password cannot be empty",
     });
   }
   if (password.length < 8 || password.length > 72) {
     return res.status(400).json({
       success: false,
+      code: "INVALID_PASSWORD_FORMAT",
       message: "Password must be between 8 and 72 characters",
     });
   }
 
   try {
-    const salt = await bcrypt.genSalt(10);
-    const encryptedPassword = await bcrypt.hash(password, salt);
-    const normalizedUsername = username.toLowerCase();
-    const normalizedEmail = email.toLowerCase();
+    const encryptedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
-      username: normalizedUsername,
-      email: normalizedEmail,
+      username,
+      email,
       password: encryptedPassword,
       role: "user",
     });
     await newUser.save();
     return res.status(201).json({
       success: true,
-      message: "User registered successfull",
+      message: "Register successful",
       user: {
         username: newUser.username,
         role: newUser.role,
@@ -48,13 +52,15 @@ async function authRegister(req, res) {
     if (err.code === 11000) {
       return res.status(409).json({
         success: false,
-        message: "User already registered, please login",
+        code: "USER_EXISTS",
+        message: "User already registered",
       });
     }
     if (err instanceof mongoose.Error.ValidationError) {
       return res.status(400).json({
         success: false,
         message: "Validation failed",
+        code: "VALIDATION_ERROR",
         error: Object.fromEntries(
           Object.values(err.errors).map((item) => {
             return [item.path, item.message];
@@ -63,28 +69,31 @@ async function authRegister(req, res) {
       });
     }
     console.log("Error while Authentication: ", err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Something went wrong, please try again later",
     });
   }
 }
 async function authLogin(req, res) {
-  const { email, password } = req.body || {};
+  const email = normalize(req.body?.email);
+  const password = req.body?.password;
 
   if (!email || !password) {
     return res.status(400).json({
       success: false,
+      code: "MISSING_FIELDS",
       message: "email or password cannot be empty",
     });
   }
   try {
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email });
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "You are not registered yet, please register first",
+        code: "INVALID_LOGIN",
+        message: "Invalid email or password",
       });
     }
 
@@ -93,7 +102,8 @@ async function authLogin(req, res) {
     if (!isPassword) {
       return res.status(400).json({
         success: false,
-        message: "Invalid credentials, please try again",
+        code: "INVALID_LOGIN",
+        message: "Invalid email or password",
       });
     }
 
@@ -123,7 +133,7 @@ async function authLogin(req, res) {
       .status(200)
       .json({
         success: true,
-        message: "User loggined successfully",
+        message: "Login successful",
       });
   } catch (err) {
     console.log("Error while Authentication: ", err);
@@ -139,7 +149,8 @@ async function accessTokenRefresh(req, res) {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: "No refresh token found",
+      code: "NO_REFRESH_TOKEN",
+      message: "Refresh token missing",
     });
   }
   try {
@@ -162,22 +173,12 @@ async function accessTokenRefresh(req, res) {
         message: "Token refreshed successfully",
       });
   } catch (err) {
-    if (err.name === "JsonWebTokenError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Refresh Token",
-      });
-    }
-    if (err.name === "TokenExpiredError") {
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token expired",
-      });
-    }
-    console.log("Token refresh Error: ", err);
-    return res.status(500).json({
+    const isExpired = err.name === "TokenExpiredError";
+
+    return res.status(isExpired ? 401 : 400).json({
       success: false,
-      message: "Internal Server Error",
+      code: isExpired ? "REFRESH_EXPIRED" : "INVALID_REFRESH",
+      message: isExpired ? "Refresh token expired" : "Invalid refresh token",
     });
   }
 }
