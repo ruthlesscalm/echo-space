@@ -3,6 +3,12 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+const cookieOptions = {
+  httpOnly: true, //javascript cannot read cookies
+  secure: false, // temporary in development for http , true in production for https
+  sameSite: "lax",
+};
+
 async function authRegister(req, res) {
   const { username, email, password } = req.body || {};
   if (!username || !email || !password) {
@@ -105,11 +111,6 @@ async function authLogin(req, res) {
         expiresIn: "7d",
       },
     );
-    const cookieOptions = {
-      httpOnly: true, //javascript cannot read cookies
-      secure: false, // temporary in development for http , true in production for https
-      sameSite: "lax",
-    };
     return res
       .cookie("authToken", authToken, {
         ...cookieOptions,
@@ -134,11 +135,38 @@ async function authLogin(req, res) {
 }
 
 async function accessTokenRefresh(req, res) {
-  console.log("Token Refresh");
+  const Token = req.cookies.refreshToken || "";
+  const decoded = jwt.verify(Token, process.env.JWT_REFRESH_TOKEN);
+  if (!decoded) {
+    return res.status(400).json({
+      success: false,
+      message: "No refresh token found",
+    });
+  }
+  const newAccessToken = jwt.sign(
+    { UserID: decoded.UserID },
+    process.env.JWT_ACCESS_TOKEN,
+    {
+      expiresIn: "15min",
+    },
+  );
+  res
+    .cookie("authToken", newAccessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
+    })
+    .status(200)
+    .json({
+      success: true,
+      message: "Token refreshed successfully",
+    });
 }
 
 async function logout(req, res) {
-  console.log("Logout function");
+  res.clearCookie("authToken").clearCookie("refreshToken").json({
+    success: true,
+    message: "Logged out successfully",
+  });
 }
 
 export { authRegister, authLogin, accessTokenRefresh, logout };

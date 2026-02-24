@@ -22,7 +22,7 @@ const Register = () => {
     console.log(formData);
     const { username, email, password } = Object.fromEntries(formData);
     console.log(username, email, password);
-    const res = await fetch("/api/auth/register", {
+    const res = await fetch("http://localhost:5000/api/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
