@@ -79,7 +79,7 @@ async function authLogin(req, res) {
     });
   }
   try {
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
       return res.status(400).json({
@@ -98,14 +98,14 @@ async function authLogin(req, res) {
     }
 
     const authToken = jwt.sign(
-      { UserID: user._id },
+      { userID: user._id },
       process.env.JWT_ACCESS_TOKEN,
       {
-        expiresIn: "15min",
+        expiresIn: "15m",
       },
     );
     const refreshToken = jwt.sign(
-      { UserID: user._id },
+      { userID: user._id },
       process.env.JWT_REFRESH_TOKEN,
       {
         expiresIn: "7d",
@@ -135,38 +135,69 @@ async function authLogin(req, res) {
 }
 
 async function accessTokenRefresh(req, res) {
-  const Token = req.cookies.refreshToken || "";
-  const decoded = jwt.verify(Token, process.env.JWT_REFRESH_TOKEN);
-  if (!decoded) {
-    return res.status(400).json({
+  const token = req.cookies.refreshToken;
+  if (!token) {
+    return res.status(401).json({
       success: false,
       message: "No refresh token found",
     });
   }
-  const newAccessToken = jwt.sign(
-    { UserID: decoded.UserID },
-    process.env.JWT_ACCESS_TOKEN,
-    {
-      expiresIn: "15min",
-    },
-  );
-  res
-    .cookie("authToken", newAccessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60 * 1000,
-    })
-    .status(200)
-    .json({
-      success: true,
-      message: "Token refreshed successfully",
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_TOKEN);
+    const newAccessToken = jwt.sign(
+      { userID: decoded.userID },
+      process.env.JWT_ACCESS_TOKEN,
+      {
+        expiresIn: "15m",
+      },
+    );
+    res
+      .cookie("authToken", newAccessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+      })
+      .status(200)
+      .json({
+        success: true,
+        message: "Token refreshed successfully",
+      });
+  } catch (err) {
+    if (err.name === "JsonWebTokenError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Refresh Token",
+      });
+    }
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token expired",
+      });
+    }
+    console.log("Token refresh Error: ", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
     });
+  }
 }
 
 async function logout(req, res) {
-  res.clearCookie("authToken").clearCookie("refreshToken").json({
-    success: true,
-    message: "Logged out successfully",
-  });
+  try {
+    return res
+      .clearCookie("authToken", cookieOptions)
+      .clearCookie("refreshToken", cookieOptions)
+      .json({
+        success: true,
+        message: "Logged out successfully",
+      });
+  } catch (err) {
+    console.log("Logout Error: ", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
 }
 
 export { authRegister, authLogin, accessTokenRefresh, logout };
