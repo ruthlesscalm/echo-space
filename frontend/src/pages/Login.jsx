@@ -91,12 +91,12 @@ const Login = () => {
                   Password
                 </label>
                 <div>
-                  <a
-                    href="#"
+                  <Link
+                    to="/forgotpassword"
                     className="font-semibold text-indigo-400 hover:text-indigo-300 text-[clamp(0.75rem,0.25vw+0.625rem,0.9375rem)]"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
               </div>
               <div className="mt-2">
