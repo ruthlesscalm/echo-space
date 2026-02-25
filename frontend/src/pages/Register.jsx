@@ -40,24 +40,24 @@ const Register = () => {
   return (
     <div className="mt-22">
       <div>
-        <h2 className="text-6xl text-white mb-6 text-center">
+        <h2 className="text-[clamp(2.25rem,2.6vw+1.375rem,4.25rem)] text-white mb-6 text-center">
           Welcome to Echo Space
         </h2>
       </div>
 
       <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">
+          <h2 className="text-center text-[clamp(1.125rem,0.625vw+0.75rem,1.875rem)] font-bold tracking-tight text-white">
             Sign up to Echo Space
           </h2>
         </div>
 
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <div className="mt-[clamp(35px,5.1vw,72px)] mx-auto w-[min(384px,90vw)]">
           <form className="space-y-6" onSubmit={handleFormSubmit}>
             <div>
               <label
                 htmlFor="username"
-                className="block text-sm/6 font-medium text-gray-100"
+                className="block text-[clamp(0.75rem,0.75rem+0.19vw,1.125rem)] font-medium text-gray-100"
               >
                 Username
               </label>
@@ -67,9 +67,10 @@ const Register = () => {
                   type="text"
                   name="username"
                   required
+                  placeholder="Enter your username"
                   value={registerForm.username}
                   onChange={handleInput}
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 text-[clamp(12px,0.78rem+0.21vw,1rem)] border border-slate-600 focus-within:border-slate-400 focus-within:ring focus-within:ring-slate-400"
                 />
               </div>
             </div>
@@ -77,7 +78,7 @@ const Register = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm/6 font-medium text-gray-100"
+                className="block text-[clamp(0.75rem,0.75rem+0.19vw,1.125rem)] font-medium text-gray-100"
               >
                 Email address
               </label>
@@ -88,9 +89,10 @@ const Register = () => {
                   name="email"
                   required
                   autoComplete="email"
+                  placeholder="Enter your email address"
                   value={registerForm.email}
                   onChange={handleInput}
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 text-[clamp(12px,0.78rem+0.21vw,1rem)] border border-slate-600 focus-within:border-slate-400 focus-within:ring focus-within:ring-slate-400"
                 />
               </div>
             </div>
@@ -99,7 +101,7 @@ const Register = () => {
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="password"
-                  className="block text-sm/6 font-medium text-gray-100"
+                  className="block text-[clamp(0.75rem,0.75rem+0.19vw,1.125rem)] font-medium text-gray-100"
                 >
                   Password
                 </label>
@@ -110,30 +112,31 @@ const Register = () => {
                   type="password"
                   name="password"
                   required
-                  alue={registerForm.password}
+                  value={registerForm.password}
                   onChange={handleInput}
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  placeholder="Enter a password"
+                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 text-[clamp(12px,0.78rem+0.21vw,1rem)] border border-slate-600 focus-within:border-slate-400 focus-within:ring focus-within:ring-slate-400"
                 />
               </div>
             </div>
 
-            <div>
+            <div className="mt-8">
               <button
                 type="submit"
-                className="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                className="flex w-full justify-center rounded-md bg-indigo-500 px-5 py-2 text-[clamp(0.75rem,0.25vw+0.625rem,0.9375rem)] font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
               >
                 Sign up
               </button>
             </div>
           </form>
 
-          <p className="mt-10 text-center text-sm/6 text-gray-400">
+          <p className="flex gap-1 justify-center mt-10 text-[clamp(0.75rem,0.25vw+0.625rem,0.9375rem)] text-gray-400">
             Already a member?
             <Link
               to="/login"
               className="font-semibold text-indigo-400 hover:text-indigo-300"
             >
-              Login{" "}
+              Login here
             </Link>
           </p>
         </div>
