@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-async function protectPage(req, res, next) {
+async function requireAuth(req, res, next) {
   const token = req.cookies.authToken;
   if (!token) {
     return res.status(401).json({
@@ -27,4 +27,4 @@ async function protectPage(req, res, next) {
   }
 }
 
-export default protectPage;
+export default requireAuth;
