@@ -1,11 +1,12 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import AuthLayout from "../layouts/AuthLayout";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
+import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register";
+import ForgotPassword from "../pages/auth/ForgotPassword";
 import About from "../pages/About";
 import Home from "../pages/Home";
-import ForgotPassword from "../pages/ForgotPassword";
+import Player from "../pages/Player";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
       {
         path: "about",
         element: <About />,
+      },
+      {
+        path: "player",
+        element: <Player />,
       },
     ],
   },

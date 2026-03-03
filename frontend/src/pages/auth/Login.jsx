@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
-import { GlobalContext } from "../contexts/GlobalState";
+import { GlobalContext } from "../../contexts/GlobalState";
 
 const Login = () => {
   const { isLoginned, setIsLoginned } = useContext(GlobalContext);

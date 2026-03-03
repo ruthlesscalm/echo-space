@@ -14,7 +14,9 @@ router.post("/login", authLogin);
 router.post("/refresh", accessTokenRefresh);
 router.post("/logout", logout);
 router.post("/admin", requireAuth, (req, res) => {
-  res.send("Welcome to admin page");
+  res.json({
+    page: "admin",
+  });
 });
 
 export default router;
