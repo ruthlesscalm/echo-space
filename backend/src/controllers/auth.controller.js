@@ -201,4 +201,45 @@ async function logout(req, res) {
   }
 }
 
-export { authRegister, authLogin, accessTokenRefresh, logout };
+async function forgotPassword(req, res) {
+  const email = normalize(req.body?.email);
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: "email cannot be empty",
+    });
+  }
+  const isEmail = await User.findOne({ email });
+  if (!isEmail) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid Email",
+    });
+  }
+  return res.status(200).json({
+    success: true,
+    message: "Password has been changed successfully",
+  });
+}
+
+async function verifyOTP(req, res) {
+  res.json({
+    message: "welcome to verify otp",
+  });
+}
+
+async function resetPassword(req, res) {
+  res.json({
+    message: "Welcome to reset password",
+  });
+}
+
+export {
+  authRegister,
+  authLogin,
+  accessTokenRefresh,
+  logout,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
+};

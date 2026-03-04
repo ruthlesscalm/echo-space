@@ -46,9 +46,9 @@ const Login = () => {
   return (
     <div className="mt-22">
       <div>
-        <h2 className="text-[clamp(2.25rem,2.6vw+1.375rem,4.25rem)] text-white text-center">
+        <h1 className="text-[clamp(2.25rem,2.6vw+1.375rem,4.25rem)] text-white text-center">
           Welcome Back
-        </h2>
+        </h1>
       </div>
 
       <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
