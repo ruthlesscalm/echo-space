@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import crypto from "node:crypto";
 
 const cookieOptions = {
   httpOnly: true, //javascript cannot read cookies
@@ -209,17 +211,52 @@ async function forgotPassword(req, res) {
       message: "email cannot be empty",
     });
   }
-  const isEmail = await User.findOne({ email });
-  if (!isEmail) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid Email",
+  try {
+    const isUser = await User.findOne({ email });
+    if (!isUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Email",
+      });
+    }
+    const otp = crypto.randomInt(100000, 999999);
+    const hashedOtp = crypto
+      .createHash("sha256")
+      .update(String(otp))
+      .digest("hex");
+
+    await User.findOneAndUpdate(
+      { email },
+      {
+        otp: hashedOtp,
+        otpExpiresAt: Date.now() + 10 * 60 * 1000,
+      },
+    );
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
     });
+    const info = await transporter.sendMail({
+      from: process.env.MAIL_FROM,
+      to: email,
+      subject: "OTP for Password Reset",
+      text: `your OTP is ${otp}. Valid for 10 minutes`,
+      html: `<p> Your OTP is <strong>${otp}</strong>. Valid for 10 minutes`,
+    });
+    return res
+      .status(200)
+      .json({ success: true, message: "OTP sent to your email" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to send OTP" });
   }
-  return res.status(200).json({
-    success: true,
-    message: "Password has been changed successfully",
-  });
 }
 
 async function verifyOTP(req, res) {
