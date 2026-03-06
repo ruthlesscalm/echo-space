@@ -32,6 +32,15 @@ async function authRegister(req, res) {
       message: "Password must be between 8 and 72 characters",
     });
   }
+  const existingUser = await User.findOne({ email });
+
+  if (existingUser) {
+    return res.status(409).json({
+      success: false,
+      code: "USER_EXISTS",
+      message: "User already registered",
+    });
+  }
 
   try {
     const encryptedPassword = await bcrypt.hash(password, 10);
@@ -110,14 +119,14 @@ async function authLogin(req, res) {
     }
 
     const authToken = jwt.sign(
-      { userID: user._id },
+      { userID: user._id, role: user.role },
       process.env.JWT_ACCESS_TOKEN,
       {
         expiresIn: "15m",
       },
     );
     const refreshToken = jwt.sign(
-      { userID: user._id },
+      { userID: user._id, role: user.role },
       process.env.JWT_REFRESH_TOKEN,
       {
         expiresIn: "7d",
@@ -158,7 +167,7 @@ async function accessTokenRefresh(req, res) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_TOKEN);
     const newAccessToken = jwt.sign(
-      { userID: decoded.userID },
+      { userID: decoded.userID, role: decoded.role },
       process.env.JWT_ACCESS_TOKEN,
       {
         expiresIn: "15m",
@@ -202,6 +211,15 @@ async function logout(req, res) {
     });
   }
 }
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 async function forgotPassword(req, res) {
   const email = normalize(req.body?.email);
@@ -214,12 +232,12 @@ async function forgotPassword(req, res) {
   try {
     const isUser = await User.findOne({ email });
     if (!isUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Email",
+      return res.status(200).json({
+        success: true,
+        message: "OTP sent to your email",
       });
     }
-    const otp = crypto.randomInt(100000, 999999);
+    const otp = crypto.randomInt(100000, 1000000);
     const hashedOtp = crypto
       .createHash("sha256")
       .update(String(otp))
@@ -232,21 +250,13 @@ async function forgotPassword(req, res) {
         otpExpiresAt: Date.now() + 10 * 60 * 1000,
       },
     );
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-    const info = await transporter.sendMail({
-      from: process.env.MAIL_FROM,
+
+    await transporter.sendMail({
+      from: `"Echo Space" <auth@ruthlesscalm.me>`,
       to: email,
       subject: "OTP for Password Reset",
       text: `your OTP is ${otp}. Valid for 10 minutes`,
-      html: `<p> Your OTP is <strong>${otp}</strong>. Valid for 10 minutes`,
+      html: `<p> Your OTP is <strong>${otp}</strong>. Valid for 10 minutes</p>`,
     });
     return res
       .status(200)
@@ -255,7 +265,7 @@ async function forgotPassword(req, res) {
     console.error(err);
     return res
       .status(500)
-      .json({ success: false, message: "Failed to send OTP" });
+      .json({ success: false, message: "Internal Server Error" });
   }
 }
 
