@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import crypto from "node:crypto";
+import { log } from "node:console";
 
 const cookieOptions = {
   httpOnly: true, //javascript cannot read cookies
@@ -270,9 +271,82 @@ async function forgotPassword(req, res) {
 }
 
 async function verifyOTP(req, res) {
-  res.json({
-    message: "welcome to verify otp",
-  });
+  const email = req.body?.email;
+  const otp = req.body?.otp;
+
+  if (!otp) {
+    return res.status(400).json({
+      success: false,
+      message: "Otp field cannot be empty",
+    });
+  }
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: "Email should be provided",
+    });
+  }
+
+  try {
+    const hashedOtp = crypto
+      .createHash("sha256")
+      .update(String(otp))
+      .digest("hex");
+    const user = await User.findOne({ email: email });
+    const savedOtp = user?.otp;
+    const savedOtpExpiresAt = user?.otpExpiresAt;
+    if (!savedOtp || !savedOtpExpiresAt) {
+      return res.status(400).json({
+        success: false,
+        message: "Please try again later",
+      });
+    }
+    if (savedOtpExpiresAt < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Otp",
+      });
+    }
+    if (hashedOtp !== savedOtp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+    if (hashedOtp === savedOtp) {
+      await User.findOneAndUpdate(
+        { email },
+        {
+          otp: null,
+          otpExpiresAt: null,
+        },
+      );
+      const resetToken = jwt.sign(
+        { userID: user.id, role: user.role },
+        process.env.JWT_RESET_TOKEN,
+        {
+          expiresIn: "10m",
+        },
+      );
+
+      return res
+        .cookie("resetToken", resetToken, {
+          ...cookieOptions,
+          maxAge: 10 * 60 * 1000,
+        })
+        .status(200)
+        .json({
+          success: true,
+          message: "OTP verified successfully",
+        });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
 }
 
 async function resetPassword(req, res) {
