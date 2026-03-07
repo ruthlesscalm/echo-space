@@ -322,7 +322,7 @@ async function verifyOTP(req, res) {
         },
       );
       const resetToken = jwt.sign(
-        { userID: user.id, role: user.role },
+        { userID: user._id, role: user.role },
         process.env.JWT_RESET_TOKEN,
         {
           expiresIn: "10m",
@@ -350,9 +350,54 @@ async function verifyOTP(req, res) {
 }
 
 async function resetPassword(req, res) {
-  res.json({
-    message: "Welcome to reset password",
-  });
+  const resetToken = req.cookies.resetToken;
+  const password = req.body?.password;
+
+  if (!resetToken) {
+    return res.status(400).json({
+      success: false,
+      message: "No reset Token found, please try again",
+    });
+  }
+  if (!password) {
+    return res.status(400).json({
+      success: false,
+      message: "password cannot be empty",
+    });
+  }
+  if (password.length < 8 || password.length > 72) {
+    return res.status(400).json({
+      success: false,
+      message: "Password must be between 8 and 72 characters",
+    });
+  }
+  try {
+    const decoded = jwt.verify(resetToken, process.env.JWT_RESET_TOKEN);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.findById(decoded.userID);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.password = hashedPassword;
+    await user.save();
+    res.clearCookie("resetToken").status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (err) {
+    console.log(err);
+    const isExpired = err.name === "TokenExpiredError";
+
+    return res.status(isExpired ? 401 : 400).json({
+      success: false,
+      code: isExpired ? "RESET_EXPIRED" : "INVALID_RESET",
+      message: isExpired ? "Reset token expired" : "Invalid reset token",
+    });
+  }
 }
 
 export {
