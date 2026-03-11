@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
       minlength: 3,
       maxlength: 30,
       validate: {
-        validator: (v) => !/[^a-zA-Z0-9_]/.test(v),
+        validator: (v) => /^[a-zA-Z0-9_]+$/.test(v),
         message:
           "Invalid Username, Username can only contain alphabets, numbers and underscores",
       },
@@ -30,17 +30,24 @@ const userSchema = new mongoose.Schema(
       minlength: 8,
       maxlength: 72,
       required: true,
+      select: false,
     },
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
     },
+    refreshToken: {
+      type: String,
+      select: false,
+    },
     otp: {
       type: String,
+      select: false,
     },
     otpExpiresAt: {
-      type: String,
+      type: Date,
+      select: false,
     },
   },
   { timestamps: true },

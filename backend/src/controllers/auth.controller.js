@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import crypto from "node:crypto";
-import { log } from "node:console";
 
 const cookieOptions = {
   httpOnly: true, //javascript cannot read cookies
@@ -33,17 +32,17 @@ async function authRegister(req, res) {
       message: "Password must be between 8 and 72 characters",
     });
   }
-  const existingUser = await User.findOne({ email });
-
-  if (existingUser) {
-    return res.status(409).json({
-      success: false,
-      code: "USER_EXISTS",
-      message: "User already registered",
-    });
-  }
 
   try {
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        code: "INVALID_LOGIN",
+        message: "Invalid email address",
+      });
+    }
     const encryptedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       username,
@@ -54,6 +53,7 @@ async function authRegister(req, res) {
     await newUser.save();
     return res.status(201).json({
       success: true,
+      code: "REGISTER_SUCCESSFUL",
       message: "Register successful",
       user: {
         username: newUser.username,
@@ -64,8 +64,8 @@ async function authRegister(req, res) {
     if (err.code === 11000) {
       return res.status(409).json({
         success: false,
-        code: "USER_EXISTS",
-        message: "User already registered",
+        code: "INVALID_LOGIN",
+        message: "Invalid email address",
       });
     }
     if (err instanceof mongoose.Error.ValidationError) {
@@ -83,7 +83,8 @@ async function authRegister(req, res) {
     console.log("Error while Authentication: ", err);
     return res.status(500).json({
       success: false,
-      message: "Something went wrong, please try again later",
+      code: "SERVER_ERROR",
+      message: "Internal Server Error",
     });
   }
 }
@@ -99,7 +100,7 @@ async function authLogin(req, res) {
     });
   }
   try {
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email }).select("+password");
 
     if (!user) {
       return res.status(400).json({
@@ -133,6 +134,7 @@ async function authLogin(req, res) {
         expiresIn: "7d",
       },
     );
+    await User.findByIdAndUpdate(user._id, { refreshToken: refreshToken });
     return res
       .cookie("authToken", authToken, {
         ...cookieOptions,
@@ -145,6 +147,7 @@ async function authLogin(req, res) {
       .status(200)
       .json({
         success: true,
+        code: "LOGIN_SUCCESSFUL",
         message: "Login successful",
       });
   } catch (err) {
@@ -167,6 +170,16 @@ async function accessTokenRefresh(req, res) {
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_TOKEN);
+    const user = await User.findById(decoded.userID).select("+refreshToken");
+
+    if (!user || user.refreshToken !== token) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_REFRESH",
+        message: "Refresh Token is invalid or is revoked",
+      });
+    }
+
     const newAccessToken = jwt.sign(
       { userID: decoded.userID, role: decoded.role },
       process.env.JWT_ACCESS_TOKEN,
@@ -197,17 +210,26 @@ async function accessTokenRefresh(req, res) {
 
 async function logout(req, res) {
   try {
+    const token = req.cookies?.refreshToken;
+    if (token) {
+      await User.findOneAndUpdate(
+        { refreshToken: token },
+        { refreshToken: null },
+      );
+    }
     return res
       .clearCookie("authToken", cookieOptions)
       .clearCookie("refreshToken", cookieOptions)
       .json({
         success: true,
+        code: "LOGOUT_SUCCESSFUL",
         message: "Logged out successfully",
       });
   } catch (err) {
     console.log("Logout Error: ", err);
     return res.status(500).json({
       success: false,
+      code: "SERVER_ERROR",
       message: "Internal Server Error",
     });
   }
@@ -227,6 +249,7 @@ async function forgotPassword(req, res) {
   if (!email) {
     return res.status(400).json({
       success: false,
+      code: "EMPTY_FIELDS",
       message: "email cannot be empty",
     });
   }
@@ -235,6 +258,7 @@ async function forgotPassword(req, res) {
     if (!isUser) {
       return res.status(200).json({
         success: true,
+        code: "MAIL_SUCCESSFUL",
         message: "OTP sent to your email",
       });
     }
@@ -259,31 +283,37 @@ async function forgotPassword(req, res) {
       text: `your OTP is ${otp}. Valid for 10 minutes`,
       html: `<p> Your OTP is <strong>${otp}</strong>. Valid for 10 minutes</p>`,
     });
-    return res
-      .status(200)
-      .json({ success: true, message: "OTP sent to your email" });
+    return res.status(200).json({
+      success: true,
+      code: "MAIL_SUCCESSFUL",
+      message: "OTP sent to your email",
+    });
   } catch (err) {
     console.error(err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Internal Server Error" });
+    return res.status(500).json({
+      success: false,
+      code: "SERVER_ERROR",
+      message: "Internal Server Error",
+    });
   }
 }
 
 async function verifyOTP(req, res) {
-  const email = req.body?.email;
+  const email = normalize(req.body?.email);
   const otp = req.body?.otp;
 
-  if (!otp) {
-    return res.status(400).json({
-      success: false,
-      message: "Otp field cannot be empty",
-    });
-  }
   if (!email) {
     return res.status(400).json({
       success: false,
+      code: "EMPTY_FIELDS",
       message: "Email should be provided",
+    });
+  }
+  if (!otp) {
+    return res.status(400).json({
+      success: false,
+      code: "EMPTY_FIELDS",
+      message: "Otp field cannot be empty",
     });
   }
 
@@ -292,58 +322,63 @@ async function verifyOTP(req, res) {
       .createHash("sha256")
       .update(String(otp))
       .digest("hex");
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email }).select(
+      "+otp +otpExpiresAt",
+    );
     const savedOtp = user?.otp;
     const savedOtpExpiresAt = user?.otpExpiresAt;
     if (!savedOtp || !savedOtpExpiresAt) {
       return res.status(400).json({
         success: false,
-        message: "Please try again later",
+        code: "INVALID_OTP",
+        message: "Invalid OTP",
       });
     }
     if (savedOtpExpiresAt < Date.now()) {
       return res.status(400).json({
         success: false,
-        message: "Invalid Otp",
+        code: "INVALID_OTP",
+        message: "OTP has expired",
       });
     }
     if (hashedOtp !== savedOtp) {
       return res.status(400).json({
         success: false,
+        code: "INVALID_OTP",
         message: "Invalid OTP",
       });
     }
-    if (hashedOtp === savedOtp) {
-      await User.findOneAndUpdate(
-        { email },
-        {
-          otp: null,
-          otpExpiresAt: null,
-        },
-      );
-      const resetToken = jwt.sign(
-        { userID: user._id, role: user.role },
-        process.env.JWT_RESET_TOKEN,
-        {
-          expiresIn: "10m",
-        },
-      );
+    await User.findOneAndUpdate(
+      { email },
+      {
+        otp: null,
+        otpExpiresAt: null,
+      },
+    );
+    const resetToken = jwt.sign(
+      { userID: user._id, role: user.role },
+      process.env.JWT_RESET_TOKEN,
+      {
+        expiresIn: "10m",
+      },
+    );
 
-      return res
-        .cookie("resetToken", resetToken, {
-          ...cookieOptions,
-          maxAge: 10 * 60 * 1000,
-        })
-        .status(200)
-        .json({
-          success: true,
-          message: "OTP verified successfully",
-        });
-    }
+    return res
+      .cookie("resetToken", resetToken, {
+        ...cookieOptions,
+        maxAge: 10 * 60 * 1000,
+      })
+      .status(200)
+      .json({
+        success: true,
+        code: "VERIFICATION_SUCCESSFUL",
+        message: "OTP verified successfully",
+      });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
       success: false,
+      code: "SERVER_ERROR",
       message: "Internal Server Error",
     });
   }
@@ -356,18 +391,21 @@ async function resetPassword(req, res) {
   if (!resetToken) {
     return res.status(400).json({
       success: false,
+      code: "EMPTY_FIELDS",
       message: "No reset Token found, please try again",
     });
   }
   if (!password) {
     return res.status(400).json({
       success: false,
+      code: "EMPTY_FIELDS",
       message: "password cannot be empty",
     });
   }
   if (password.length < 8 || password.length > 72) {
     return res.status(400).json({
       success: false,
+      code: "VALIDATION_ERROR",
       message: "Password must be between 8 and 72 characters",
     });
   }
@@ -378,11 +416,14 @@ async function resetPassword(req, res) {
     if (!user) {
       return res.status(404).json({
         success: false,
+        code: "INVALID_LOGIN",
+
         message: "User not found",
       });
     }
 
     user.password = hashedPassword;
+    user.refreshToken = null;
     await user.save();
     res.clearCookie("resetToken").status(200).json({
       success: true,
