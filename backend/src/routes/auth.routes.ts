@@ -16,7 +16,7 @@ router.post("/register", authRegister);
 router.post("/login", authLogin);
 router.post("/refresh", accessTokenRefresh);
 router.post("/logout", logout);
-router.post("/admin", requireAuth, (req, res) => {
+router.post("/admin", requireAuth, (_, res) => {
   res.json({
     page: "admin",
   });

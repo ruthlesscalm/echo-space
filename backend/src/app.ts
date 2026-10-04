@@ -1,5 +1,5 @@
 import express from "express";
-import authRouter from "./routes/auth.routes.js";
+import authRouter from "./routes/auth.routes.js"
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRouter);
 
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.send("Hello World");
 });
 
