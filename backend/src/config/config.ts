@@ -7,6 +7,7 @@ type Config = {
   mongoUri: string;
   mongoDbName: string;
   nodeEnv: "production" | "development";
+  jwtAccessToken: string;
 };
 
 const PORT = Number(process.env.PORT);

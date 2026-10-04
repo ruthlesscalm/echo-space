@@ -1,7 +1,9 @@
+import type { Request, Response, NextFunction } from "express";
+import config from "../config/config.js";
 import jwt from "jsonwebtoken";
 
-async function requireAuth(req, res, next) {
-  const token = req.cookies.authToken;
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const token: string = req.cookies.authToken;
   if (!token) {
     return res.status(401).json({
       success: false,
@@ -9,7 +11,7 @@ async function requireAuth(req, res, next) {
     });
   }
   try {
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN);
+    const decoded = jwt.verify(token, config.jwtAccessToken);
     req.user = decoded;
     next();
   } catch (err) {
